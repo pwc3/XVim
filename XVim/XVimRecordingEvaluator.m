@@ -20,16 +20,11 @@
 @implementation XVimRecordingEvaluator
 - (id)initWithWindow:(XVimWindow *)window withRegister:(NSString*)reg{
     if( self = [super initWithWindow:window] ){
-        self.evaluatorStack = [[[NSMutableArray alloc] init] autorelease];
+        self.evaluatorStack = [[NSMutableArray alloc] init];
         [self.evaluatorStack addObject:[[XVimNormalEvaluator alloc] initWithWindow:window]];
         self.reg = reg;
     }
     return self;
-}
-
-- (void)dealloc{
-    self.evaluatorStack = nil;
-    [super dealloc];
 }
 
 - (void)becameHandler{

@@ -84,7 +84,10 @@
         for( unsigned int i = 0 ; i < count; i++ ){
             SEL sel = method_getName(m[i]);
             if( [NSStringFromSelector(sel) rangeOfString:[category stringByAppendingString:@"_testcases"]].location != NSNotFound ){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 [self.testCases addObjectsFromArray:[self performSelector:sel]];
+#pragma clang diagnostic pop
             }
         }
     }
@@ -92,17 +95,12 @@
     
 }
 
-- (void)dealloc{
-    self.testCases = nil;
-    [super dealloc];
-}
-
 - (void)runTest{
     // Create Test Cases
     NSArray* testArray = self.testCases;
     
     // Alert Dialog to confirm current text will be deleted.
-    NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert* alert = [[NSAlert alloc] init];
     [alert setMessageText:@"Running test deletes text in current source text view. Proceed?"];
     [alert addButtonWithTitle:@"OK"];
     [alert addButtonWithTitle:@"Cancel"];
@@ -120,16 +118,16 @@
     }
     
     // Setup Talbe view to show result
-    NSTableView* tableView= [[[NSTableView alloc] init] autorelease];
+    NSTableView* tableView= [[NSTableView alloc] init];
     [tableView setDataSource:self];
     [tableView setDelegate:self];
    
     // Create Columns
-    NSTableColumn* column1 = [[[NSTableColumn alloc] initWithIdentifier:@"Description" ] autorelease];
+    NSTableColumn* column1 = [[NSTableColumn alloc] initWithIdentifier:@"Description" ];
     [column1.headerCell setStringValue:@"Description"];
-    NSTableColumn* column2 = [[[NSTableColumn alloc] initWithIdentifier:@"Pass/Fail" ] autorelease];
+    NSTableColumn* column2 = [[NSTableColumn alloc] initWithIdentifier:@"Pass/Fail" ];
     [column2.headerCell setStringValue:@"Pass/Fail"];
-    NSTableColumn* column3 = [[[NSTableColumn alloc] initWithIdentifier:@"Message" ] autorelease];
+    NSTableColumn* column3 = [[NSTableColumn alloc] initWithIdentifier:@"Message" ];
     [column3.headerCell setStringValue:@"Message"];
     [column3 setWidth:500.0];
     
@@ -140,13 +138,13 @@
     [tableView reloadData];
     
     // Setup the table view into scroll view
-    NSScrollView* scroll = [[[NSScrollView alloc] initWithFrame:NSMakeRect(0,0,600,300)] autorelease];
+    NSScrollView* scroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(0,0,600,300)];
     [scroll setDocumentView:tableView];
     [scroll setHasVerticalScroller:YES];
     [scroll setHasHorizontalScroller:YES];
     
     // Show it as a modal
-    alert = [[[NSAlert alloc] init] autorelease];
+    alert = [[NSAlert alloc] init];
     [alert setMessageText:@"Result"];
     [alert setAccessoryView:scroll];
     [alert addButtonWithTitle:@"OK"];
@@ -169,9 +167,9 @@
 }
 
 - (float)heightForString:(NSString*)myString withFont:(NSFont*)myFont withWidth:(float)myWidth{
-    NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithString:myString] autorelease];
-    NSTextContainer *textContainer = [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)] autorelease];
-    NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:myString];
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)];
+    NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
     [layoutManager addTextContainer:textContainer];
     [textStorage addLayoutManager:layoutManager];
     [textStorage addAttribute:NSFontAttributeName value:myFont

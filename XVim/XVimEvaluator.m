@@ -63,21 +63,13 @@ static XVimEvaluator* _noOperationEvaluator = nil;
     if(self = [super init]){
         self.window = window;
         self.parent = nil;
-        self.argumentString = [[[NSMutableString alloc] init] autorelease];
+        self.argumentString = [[NSMutableString alloc] init];
         self.numericArg = 1;
         self.numericMode = NO;
         self.yankRegister = nil;
         self.onChildCompleteHandler = @selector(onChildComplete:);
     }
     return self;
-}
-
-- (void)dealloc{
-    self.window = nil;
-    self.parent = nil;
-    self.argumentString = nil;
-    self.yankRegister = nil;
-    [super dealloc];
 }
 
 - (NSTextView*)sourceView{
@@ -93,7 +85,10 @@ static XVimEvaluator* _noOperationEvaluator = nil;
 	SEL handler = [keyStroke selectorForInstance:self];
 	if (handler) {
 		TRACE_LOG(@"Calling SELECTOR %@", NSStringFromSelector(handler));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         return [self performSelector:handler];
+#pragma clans diagnostic pop
 	}
     else{
         TRACE_LOG(@"SELECTOR %@ not found", NSStringFromSelector(handler));
@@ -173,7 +168,7 @@ static XVimEvaluator* _noOperationEvaluator = nil;
 - (NSString*)yankRegister {
     // Never use self.yankRegister here. It causes INFINITE LOOP
     if( nil != _yankRegister ){
-        return [[_yankRegister retain] autorelease];
+        return _yankRegister;
     }
     if( nil == self.parent ){
         return _yankRegister;
@@ -211,7 +206,7 @@ static XVimEvaluator* _noOperationEvaluator = nil;
 }
 
 - (XVimCommandLineEvaluator*)searchEvaluatorForward:(BOOL)forward{
-	return [[[XVimCommandLineEvaluator alloc] initWithWindow:self.window
+	return [[XVimCommandLineEvaluator alloc] initWithWindow:self.window
                                                  firstLetter:forward?@"/":@"?"
                                                      history:[[XVim instance] searchHistory]
                                                   completion:^ XVimEvaluator* (NSString *command, id* result)
@@ -248,7 +243,7 @@ static XVimEvaluator* _noOperationEvaluator = nil;
                  }else{
                      [self.sourceView xvim_highlightNextSearchCandidateBackward:m.regex count:self.numericArg option:m.option];
                  }
-             }] autorelease];
+             }];
 }
 
 @end

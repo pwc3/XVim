@@ -221,7 +221,7 @@
 - (NSMutableArray*)foundRanges{
     id ranges = [self dataForName:@"foundRanges"];
     if( nil == ranges ){
-        ranges = [[[NSMutableArray alloc] init] autorelease];
+        ranges = [[NSMutableArray alloc] init];
         [self setData:ranges forName:@"foundRanges"];
     }
     return ranges;
@@ -943,7 +943,7 @@
     NSRange characterRange = [self.textStorage characterRangeForLineRange:NSMakeRange(line1-1, line2-line1+1)];
     NSString *str = [[self xvim_string] substringWithRange:characterRange];
     
-    NSMutableArray *lines = [[[str componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] mutableCopy] autorelease];
+    NSMutableArray *lines = [[str componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] mutableCopy];
     if ([[lines lastObject] length] == 0) {
         [lines removeLastObject];
     }
@@ -1346,11 +1346,11 @@
             [placeholders addObject:[NSValue valueWithRange:retval]];
         }
         if ([self.textStorage isLOL:curPos] || [self.textStorage isEOF:curPos]) {
-            return [placeholders autorelease];
+            return placeholders;
         }
     }
     
-    return [placeholders autorelease];
+    return placeholders;
 }
 
 
@@ -1538,7 +1538,7 @@
 
 - (NSArray*)xvim_selectedRanges{
     NSUInteger selectionStart, selectionEnd = NSNotFound;
-    NSMutableArray* rangeArray = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray* rangeArray = [[NSMutableArray alloc] init];
     // And then select new selection area
     if (self.selectionMode == XVIM_VISUAL_NONE) { // its not in selecting mode
         [rangeArray addObject:[NSValue valueWithRange:NSMakeRange(self.insertionPoint,0)]];
@@ -1843,7 +1843,7 @@
     }
     TRACE_LOG(@"YANKED TYPE:%d", self.lastYankedType);
     
-    NSMutableArray* tmp = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray* tmp = [[NSMutableArray alloc] init];
     for( NSValue* range in ranges ){
         if( range.rangeValue.length == 0 ){
             // Nothing to yank

@@ -69,10 +69,10 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
     // I have tried to add the item into "Editor" but did not work.
     // It looks that the initialization of "Editor" menu is done later...
     NSMenu* menu = [[NSApplication sharedApplication] mainMenu];
-    NSMenuItem* item = [[[NSMenuItem alloc] init] autorelease];
-    NSMenu* m = [[[NSMenu alloc] initWithTitle:@"XVim"] autorelease];
+    NSMenuItem* item = [[NSMenuItem alloc] init];
+    NSMenu* m = [[NSMenu alloc] initWithTitle:@"XVim"];
     [item setSubmenu:m];
-    NSMenuItem* item1 = [[[NSMenuItem alloc] init] autorelease];
+    NSMenuItem* item1 = [[NSMenuItem alloc] init];
     item1.title = @"Enable";
     [item1 setEnabled:YES];
     [item1 setState:NSOnState];
@@ -82,7 +82,7 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
     [m addItem:item1];
     
     if( [XVim instance].options.debug ){
-        NSMenuItem* item2 = [[[NSMenuItem alloc] init] autorelease];
+        NSMenuItem* item2 = [[NSMenuItem alloc] init];
         item2.title = @"Run Test";
         item2.target = [XVim instance];
         item2.action = @selector(runTest:);
@@ -160,7 +160,7 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
 
 - (id)init {
 	if (self = [super init]) {
-		self.options = [[[XVimOptions alloc] init] autorelease];
+		self.options = [[XVimOptions alloc] init];
 	}
     
 	return self;
@@ -172,13 +172,13 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
     _lastCharacterSearchMotion = nil;
     _marks = [[XVimMarks alloc] init];
     
-    self.excmd = [[[XVimExCommand alloc] init] autorelease];
+    self.excmd = [[XVimExCommand alloc] init];
     self.lastPlaybackRegister = nil;
-    self.registerManager = [[[XVimRegisterManager alloc] init] autorelease];
-    self.lastOperationCommands = [[[XVimMutableString alloc] init] autorelease];
+    self.registerManager = [[XVimRegisterManager alloc] init];
+    self.lastOperationCommands = [[XVimMutableString alloc] init];
     self.lastVisualPosition = XVimMakePosition(NSNotFound, NSNotFound);
     self.lastVisualSelectionBegin = XVimMakePosition(NSNotFound, NSNotFound);
-    self.tempRepeatRegister = [[[XVimMutableString alloc] init] autorelease];
+    self.tempRepeatRegister = [[XVimMutableString alloc] init];
     self.isRepeating = NO;
     self.isExecuting = NO;
     _logFile = nil;
@@ -190,25 +190,6 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
     
     [_options addObserver:self forKeyPath:@"debug" options:NSKeyValueObservingOptionNew context:nil];
 }
-
--(void)dealloc{
-    self.excmd = nil;
-    self.registerManager = nil;
-    self.lastOperationCommands = nil;
-    self.lastPlaybackRegister = nil;
-    self.lastOperationCommands = nil;
-    self.tempRepeatRegister = nil;
-    [_options release];
-    [_searcher release];
-    [_lastCharacterSearchMotion release];
-    [_excmd release];
-    [_logFile release];
-    [_marks release];
-    self.options = nil;
-    
-	[super dealloc];
-}
-
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
     if( [keyPath isEqualToString:@"debug"]) {
@@ -233,9 +214,9 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
 - (void)parseRcFile {
     NSString *homeDir = NSHomeDirectoryForUser(NSUserName());
     NSString *keymapPath = [homeDir stringByAppendingString: @"/.xvimrc"]; 
-    NSString *keymapData = [[[NSString alloc] initWithContentsOfFile:keymapPath
+    NSString *keymapData = [[NSString alloc] initWithContentsOfFile:keymapPath
                                                            encoding:NSUTF8StringEncoding
-															  error:NULL] autorelease];
+															  error:NULL];
 	for (NSString *string in [keymapData componentsSeparatedByString:@"\n"])
 	{
 		[self.excmd executeCommand:[@":" stringByAppendingString:string] inWindow:nil];
@@ -251,11 +232,31 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
     // It has the view as instance variable named "_consoleView"
     // So use obj-c runtime method to get instance varialbe by its name.
     IDEConsoleTextView* pView;
-    object_getInstanceVariable(console , "_consoleView" , (void**)&pView);
+    
+    // this is unavailable under ARC
+    // object_getInstanceVariable(console , "_consoleView" , (void**)&pView);
+    
+    static Ivar consoleViewIvar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        unsigned int count = 0;
+        Ivar *ivarList = class_copyIvarList([console class], &count);
+        
+        for (unsigned int i = 0; i < count; i++)
+        {
+            if (strcmp(ivar_getName(ivarList[i]), "_consoleView") == 0)
+            {
+                consoleViewIvar = ivarList[i];
+                break;
+            }
+        }
+    });
+    
+    pView = object_getIvar(console, consoleViewIvar);
     
     va_list argumentList;
     va_start(argumentList, fmt);
-    NSString* string = [[[NSString alloc] initWithFormat:fmt arguments:argumentList] autorelease];
+    NSString* string = [[NSString alloc] initWithFormat:fmt arguments:argumentList];
     pView.logMode = 1; // I do not know well about this value. But we have to set this to write text into the console.
     [pView insertText:string];
     [pView insertNewline:self];
@@ -305,7 +306,7 @@ NSString * const XVimDocumentPathKey = @"XVimDocumentPathKey";
 }
 
 - (void)runTest:(id)sender{
-    [[[[XVimTester alloc] init] autorelease] runTest];
+    [[[XVimTester alloc] init] runTest];
 }
 
 - (void)toggleXVim:(id)sender{

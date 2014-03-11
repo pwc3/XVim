@@ -36,8 +36,8 @@
 
 -(id)initWithCmd:(NSString*)cmd method:(NSString*)method{
     if( self = [super init] ){
-        cmdName = [cmd retain];
-        methodName = [method retain];
+        cmdName = cmd;
+        methodName = method;
     }
     return self;
 }
@@ -577,11 +577,6 @@
     return self;
 }
 
-- (void)dealloc{
-    [_excommands release];
-    [super dealloc];
-}
-
 // This method correnspons parsing part of get_address in ex_cmds.c
 - (NSUInteger)getAddress:(unichar*)parsing :(unichar**)cmdLeft inWindow:(XVimWindow*)window
 {
@@ -711,7 +706,7 @@
 
 - (XVimExArg*)parseCommand:(NSString*)cmd inWindow:(XVimWindow*)window
 {
-    XVimExArg* exarg = [[[XVimExArg alloc] init] autorelease]; 
+    XVimExArg* exarg = [[XVimExArg alloc] init]; 
     NSUInteger len = [cmd length];
     
     // Create unichar array to parse. Its easier
@@ -836,7 +831,10 @@
         if( [cmdname.cmdName hasPrefix:[exarg cmd]] ){
             SEL method = NSSelectorFromString(cmdname.methodName);
             if( [self respondsToSelector:method] ){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 [self performSelector:method withObject:exarg withObject:window];
+#pragma clang diagnostic pop
                 break;
             }
         }
@@ -858,11 +856,14 @@
     if( [params count] == 0 ){
         return;
     }
-    XVimDebug* debug = [[[XVimDebug alloc] init] autorelease];
+    XVimDebug* debug = [[XVimDebug alloc] init];
     NSString* selector = [NSString stringWithFormat:@"%@:withWindow:",[params objectAtIndex:0]];
     [params removeObjectAtIndex:0];
     if( [debug respondsToSelector:NSSelectorFromString(selector)] ){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [debug performSelector:NSSelectorFromString(selector) withObject:params withObject:window];
+#pragma clang diagnostic pop
     }
 }
 
@@ -1175,7 +1176,7 @@
 }
 
 - (void)test:(XVimExArg*)args inWindow:(XVimWindow*)window{
-    [[[[XVimTester alloc] initWithTestCategory:args.arg] autorelease] runTest];
+    [[[XVimTester alloc] initWithTestCategory:args.arg] runTest];
 }
 
 - (void)vmap:(XVimExArg*)args inWindow:(XVimWindow*)window{
@@ -1272,7 +1273,10 @@
     IDEWorkspaceTabController* ctrl = XVimLastActiveWorkspaceTabController();
     if( [ctrl respondsToSelector:item.action] ){
         NSLog(@"IDEWorkspaceTabController perform action");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [ctrl performSelector:item.action withObject:item];
+#pragma clang diagnostic pop
     } else {
         [NSApp sendAction:item.action to:item.target from:item];
         NSLog(@"menu perform action");
@@ -1282,7 +1286,10 @@
 - (void)xctabctrl:(XVimExArg*)args inWindow:(XVimWindow*)window{
     IDEWorkspaceTabController* ctrl = XVimLastActiveWorkspaceTabController();
     if( [ctrl respondsToSelector:NSSelectorFromString(args.arg)] ){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [ctrl performSelector:NSSelectorFromString(args.arg) withObject:self];
+#pragma clang diagnostic pop
     }
 }
 

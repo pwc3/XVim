@@ -14,7 +14,7 @@ static const NSString* EXTRA_DATA_KEY = @"EXTRADATAKEY";
 @implementation NSObject (ExtraData)
 
 - (id)dataForName:(NSString*)name{
-    NSMutableDictionary* dic = objc_getAssociatedObject(self , EXTRA_DATA_KEY);
+    NSMutableDictionary* dic = objc_getAssociatedObject(self , (__bridge const void *)(EXTRA_DATA_KEY));
     if( nil == dic ){
         return nil;
     }
@@ -28,10 +28,10 @@ static const NSString* EXTRA_DATA_KEY = @"EXTRADATAKEY";
 }
 
 - (void)setData:(id)data forName:(NSString*)name{
-    NSMutableDictionary* dic = objc_getAssociatedObject(self , EXTRA_DATA_KEY);
+    NSMutableDictionary* dic = objc_getAssociatedObject(self , (__bridge const void *)(EXTRA_DATA_KEY));
     if( nil == dic ){
         dic = [NSMutableDictionary dictionary];
-        objc_setAssociatedObject(self, EXTRA_DATA_KEY, dic, OBJC_ASSOCIATION_RETAIN);
+        objc_setAssociatedObject(self, (__bridge const void *)(EXTRA_DATA_KEY), dic, OBJC_ASSOCIATION_RETAIN);
     }
     
     if( nil == data){

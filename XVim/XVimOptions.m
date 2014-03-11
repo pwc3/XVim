@@ -54,11 +54,6 @@
     return self;
 }
 
-- (void)dealloc{
-    [_option_maps release];
-    [super dealloc];
-}
-
 - (id)getOption:(NSString*)name{
     NSString* propName = name;
     if( [_option_maps objectForKey:name] ){

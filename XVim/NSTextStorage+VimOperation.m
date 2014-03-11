@@ -1319,7 +1319,7 @@ static NSInteger seek_forwards(NSString*,NSInteger,NSCharacterSet*);
 typedef struct s_NSStringHelper
 {
     unichar    buffer[ITERATE_STRING_BUFFER_SIZE];
-    NSString*  string;
+    __unsafe_unretained NSString*  string;
     NSUInteger strLen;
     NSInteger  index;
     
@@ -1354,7 +1354,7 @@ unichar characterAtIndex(NSStringHelper*, NSInteger index);
             wordSet = charSet;
         }
         else {
-            NSMutableCharacterSet *charSet = [[[NSCharacterSet alphanumericCharacterSet] mutableCopy] autorelease];
+            NSMutableCharacterSet *charSet = [[NSCharacterSet alphanumericCharacterSet] mutableCopy];
             [charSet addCharactersInString:@"_"];
             wordSet = charSet;
         }

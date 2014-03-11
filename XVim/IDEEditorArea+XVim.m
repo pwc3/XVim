@@ -20,14 +20,44 @@ static const char* KEY_COMMAND_LINE = "commandLine";
 
 
 - (NSView*)textViewArea{
-    NSView* layoutView;
-    object_getInstanceVariable(self, "_editorAreaAutoLayoutView", (void**)&layoutView); // The view contains editors and border view
+    static Ivar editorAreaAutoLayoutViewIvar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        unsigned int count = 0;
+        Ivar *ivarList = class_copyIvarList([self class], &count);
+        
+        for (unsigned int i = 0; i < count; i++)
+        {
+            if (strcmp(ivar_getName(ivarList[i]), "_editorAreaAutoLayoutView") == 0)
+            {
+                editorAreaAutoLayoutViewIvar = ivarList[i];
+                break;
+            }
+        }
+    });
+    
+    NSView* layoutView = object_getIvar(self, editorAreaAutoLayoutViewIvar); // The view contains editors and border view
     return layoutView;
 }
 
 - (DVTBorderedView*)debuggerBarBorderedView{
-    DVTBorderedView* border;
-    object_getInstanceVariable(self, "_debuggerBarBorderedView", (void**)&border); // The view contains editors and border view
+    static Ivar debuggerBarBorderedViewIvar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        unsigned int count = 0;
+        Ivar *ivarList = class_copyIvarList([self class], &count);
+        
+        for (unsigned int i = 0; i < count; i++)
+        {
+            if (strcmp(ivar_getName(ivarList[i]), "_debuggerBarBorderedView") == 0)
+            {
+                debuggerBarBorderedViewIvar = ivarList[i];
+                break;
+            }
+        }
+    });
+    
+    DVTBorderedView* border = object_getIvar(self, debuggerBarBorderedViewIvar); // The view contains editors and border view
     return border;
 }
 
@@ -35,7 +65,7 @@ static const char* KEY_COMMAND_LINE = "commandLine";
     NSView* layoutView = [self textViewArea];
     // Check if we already have command line in the _editorAreaAutoLayoutView.
     if( nil == [self commandLine] ){
-        XVimCommandLine *cmd = [[[XVimCommandLine alloc] init] autorelease];
+        XVimCommandLine *cmd = [[XVimCommandLine alloc] init];
         objc_setAssociatedObject( self, (void*)KEY_COMMAND_LINE, cmd, OBJC_ASSOCIATION_RETAIN);
         [layoutView addSubview:cmd];
         

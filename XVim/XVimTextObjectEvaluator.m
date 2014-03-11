@@ -27,10 +27,6 @@
 	return self;
 }
 
-- (void)dealloc{
-    [super dealloc];
-}
-
 - (XVimEvaluator*)defaultNextEvaluator{
     return nil;
 }

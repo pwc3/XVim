@@ -27,7 +27,7 @@
         return [XVimEvaluator invalidEvaluator];
     }
     
-    XVimMark* mark = [[[XVimMark alloc] init] autorelease];
+    XVimMark* mark = [[XVimMark alloc] init];
 	NSRange r = [self.sourceView selectedRange];
     mark.line = [self.sourceView.textStorage lineNumber:r.location];
     mark.column = [self.sourceView.textStorage columnNumber:r.location];

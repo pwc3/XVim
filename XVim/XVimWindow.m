@@ -44,7 +44,7 @@ static const char* KEY_WINDOW = "xvimwindow";
 }
 
 + (void)createWindowForIDEEditorArea:(IDEEditorArea*)editorArea{
-    XVimWindow* w = [[[XVimWindow alloc] initWithIDEEditorArea:editorArea] autorelease];
+    XVimWindow* w = [[XVimWindow alloc] initWithIDEEditorArea:editorArea];
 	objc_setAssociatedObject(editorArea, KEY_WINDOW, w, OBJC_ASSOCIATION_RETAIN);
 }
 
@@ -63,7 +63,7 @@ static const char* KEY_WINDOW = "xvimwindow";
 
 - (id)initWithIDEEditorArea:(IDEEditorArea *)editorArea{
     if (self = [super init]){
-		_staticString = [@"" retain];
+		_staticString = @"";
 		_keymapContext = [[XVimKeymapContext alloc] init];
         self.editorArea = editorArea;
         _evaluatorStack = [[NSMutableArray alloc] init];
@@ -75,20 +75,10 @@ static const char* KEY_WINDOW = "xvimwindow";
     return self;
 }
 
-- (void)dealloc{
-    [_keymapContext release];
-    [_staticString release];
-    self.editorArea = nil;
-    self.inputContext = nil;
-    self.tmpBuffer = nil;
-    [_evaluatorStack release];
-    [super dealloc];
-}
-
 - (void)_initEvaluatorStack:(NSMutableArray*)stack{
     // Initialize evlauator stack
     [stack removeAllObjects];
-    XVimEvaluator* firstEvaluator = [[[XVimNormalEvaluator alloc] initWithWindow:self] autorelease];
+    XVimEvaluator* firstEvaluator = [[XVimNormalEvaluator alloc] initWithWindow:self];
     [stack addObject:firstEvaluator];
     [firstEvaluator becameHandler];
 }
@@ -225,7 +215,7 @@ static const char* KEY_WINDOW = "xvimwindow";
     while(YES){
         if( nil == nextEvaluator ){
             // current evaluator finished its task
-            XVimEvaluator* completeEvaluator = [[[evaluatorStack lastObject] retain] autorelease]; // We have to retain here not to be dealloced in didEndHandler method.
+            XVimEvaluator* completeEvaluator = [evaluatorStack lastObject];
             [evaluatorStack removeLastObject]; // remove current evaluator from the stack
             [completeEvaluator didEndHandler];
             if( [evaluatorStack count] == 0 ){
@@ -238,8 +228,11 @@ static const char* KEY_WINDOW = "xvimwindow";
                 // Pass current evaluator to the evaluator below the current evaluator
                 currentEvaluator = [evaluatorStack lastObject];
                 [currentEvaluator becameHandler];
-                 SEL onCompleteHandler = currentEvaluator.onChildCompleteHandler;
+                SEL onCompleteHandler = currentEvaluator.onChildCompleteHandler;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 nextEvaluator = [currentEvaluator performSelector:onCompleteHandler withObject:completeEvaluator];
+#pragma clang diagnostic pop
                 [currentEvaluator resetCompletionHandler];
             }
         }else if( nextEvaluator == [XVimEvaluator invalidEvaluator]){
@@ -292,7 +285,7 @@ static const char* KEY_WINDOW = "xvimwindow";
         // We want to keep current selection length and handle it by a VisualEvaluator
         [[self _currentEvaluator] didEndHandler];
         [_evaluatorStack removeAllObjects];
-        [_evaluatorStack addObject:[[[XVimNormalEvaluator alloc] initWithWindow:self] autorelease]];
+        [_evaluatorStack addObject:[[XVimNormalEvaluator alloc] initWithWindow:self]];
         [self handleOneXVimString:@"v"];
     }
 }

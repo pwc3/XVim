@@ -22,9 +22,4 @@
     return nil;
 }
 
-- (void)dealloc{
-    self.keyStroke = nil;
-    [super dealloc];
-}
-
 @end
