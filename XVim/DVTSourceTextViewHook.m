@@ -123,10 +123,10 @@
 
 // This pragma is for suppressing warning that the dealloc method does not call [super dealloc]. ([base dealloc_] calls [super dealloc] so we do not need it)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
 - (void)dealloc{
     DVTSourceTextView *base = (DVTSourceTextView*)self;
     @try{
+        TRACE_LOG(@"%p dealloc", base);
         [XVim.instance.options removeObserver:self forKeyPath:@"hlsearch"];
         [XVim.instance.options removeObserver:self forKeyPath:@"ignorecase"]; 
         [XVim.instance.searcher removeObserver:self forKeyPath:@"lastSearchString"];
@@ -135,10 +135,7 @@
         ERROR_LOG(@"Exception %@: %@", [exception name], [exception reason]);
         [Logger logStackTrace:exception];
     }
-    [base dealloc_];
-    return;
 }
-#pragma GCC diagnostic pop
 
 - (void)setSelectedRanges:(NSArray *)ranges affinity:(NSSelectionAffinity)affinity stillSelecting:(BOOL)flag{
     [(DVTSourceTextView*)self setSelectedRanges_:ranges affinity:affinity stillSelecting:flag];

@@ -54,8 +54,6 @@
 }
 
 // This pragma is for suppressing warning that the dealloc method does not call [super dealloc]. ([base dealloc_] calls [super dealloc] so we do not need it)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
 - (void)dealloc{
     DVTSourceTextScrollView *base = (DVTSourceTextScrollView*)self;
     @try{
@@ -66,10 +64,7 @@
         ERROR_LOG(@"Exception %@: %@", [exception name], [exception reason]);
         [Logger logStackTrace:exception];
     }
-    [base dealloc_];
-    return;
 }
-#pragma GCC diagnostic pop
 
 - (BOOL)hasVerticalScroller{
     if( [XVim.instance.options.guioptions rangeOfString:@"r"].location == NSNotFound) {
